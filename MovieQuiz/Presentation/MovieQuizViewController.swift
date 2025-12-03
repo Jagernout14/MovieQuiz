@@ -6,7 +6,8 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var counterLabel: UILabel!
-    
+    @IBOutlet private var noButton: UIButton!
+    @IBOutlet private var yesButton: UIButton!
     // Models
     private struct QuizStepViewModel {
         let image: UIImage
@@ -82,6 +83,9 @@ final class MovieQuizViewController: UIViewController {
         imageView.image = step.image
         textLabel.text = step.question
         counterLabel.text = step.questionNumber
+        
+        yesButton.isEnabled = true
+        noButton.isEnabled = true
     }
    
     private func showAnswerResult (isCorrect: Bool) {
@@ -133,20 +137,22 @@ final class MovieQuizViewController: UIViewController {
             
             alert.addAction(action)
             
-            self.present(alert, animated: true, completion: nil)
+            present(alert, animated: true, completion: nil)
         }
     
     // Actions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        let currentQuestion = questions[currentQuestionIndex]
-        let givenAnswer = true
-        
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        answer(given: true)
     }
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        let currentQuestion = questions[currentQuestionIndex]
-        let givenAnswer = false
-        
-        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        answer(given: false)
     }
+   
+    private func answer (given: Bool) {
+        let correct = questions[currentQuestionIndex].correctAnswer
+        showAnswerResult(isCorrect: given == correct)
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+    }
+    // Та подсказка, которую мне дали (с принудительной распаковкой опционала) - не стал ее использовать, по двум причинам. Первая - в учебнике было указано, что форс анврап желательно нигде не использовать. Вторая - код не работал. Рещил вынести логику кнопки в отдельную функцию и переиспользовать ее.
 }
