@@ -60,6 +60,7 @@ final class MovieQuizViewController: UIViewController {
                          text: "Рейтинг этого фильма больше чем 6?",
                          correctAnswer: false)
         ]
+    
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     
@@ -111,7 +112,6 @@ final class MovieQuizViewController: UIViewController {
                         text: text,
                         buttonText: "Сыграть ещё раз")
                     show (quiz: viewModel)
-           
         } else {
             currentQuestionIndex += 1
             let nextQuestion = questions[currentQuestionIndex]
@@ -134,9 +134,7 @@ final class MovieQuizViewController: UIViewController {
                 let viewModel = self.convert(model: firstQuestion)
                 self.show(quiz: viewModel)
             }
-            
             alert.addAction(action)
-            
             present(alert, animated: true, completion: nil)
         }
     
@@ -154,5 +152,4 @@ final class MovieQuizViewController: UIViewController {
         yesButton.isEnabled = false
         noButton.isEnabled = false
     }
-    // Та подсказка, которую мне дали (с принудительной распаковкой опционала) - не стал ее использовать, по двум причинам. Первая - в учебнике было указано, что форс анврап желательно нигде не использовать. Вторая - код не работал. Рещил вынести логику кнопки в отдельную функцию и переиспользовать ее.
 }
