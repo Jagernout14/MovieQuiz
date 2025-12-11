@@ -8,16 +8,8 @@ final class MovieQuizViewController: UIViewController {
     @IBOutlet private var counterLabel: UILabel!
     @IBOutlet private var noButton: UIButton!
     @IBOutlet private var yesButton: UIButton!
-    // Models
-    
-        
-    
-    
-    
-    
-    //Mock and properties
-    
-    
+
+    //Properties
     private var currentQuestionIndex = 0
     private var correctAnswers = 0
     private let questionAmount: Int = 10
@@ -30,11 +22,8 @@ final class MovieQuizViewController: UIViewController {
         if let firstQuestion = questionFactory.requestNextQuestion() {
             currentQuestion = firstQuestion
             let viewModel = convert(model: firstQuestion)
+            show(quiz: viewModel)
         }
-        
-        //let currentQuestion = questions[currentQuestionIndex]
-        //let viewModel = convert(model: currentQuestion)
-        //show(quiz: viewModel)
     }
     
     //Methods
@@ -69,13 +58,13 @@ final class MovieQuizViewController: UIViewController {
                 self.showNextQuestionOrResult()
             }
         if let nextQuestion = self.questionFactory.requestNextQuestion() {
-            self.currentQuestion = nextQuestion
+           self.currentQuestion = nextQuestion
         }
     }
     
     private func showNextQuestionOrResult() {
         if currentQuestionIndex == questionAmount - 1 {
-            let text = "Ваш результат: \(correctAnswers)/10"
+            let text = "Ваш результат: \(correctAnswers)/\(questionAmount)"
                     let viewModel = QuizResultViewModel (
                         title: "Этот раунд окончен!",
                         text: text,
@@ -101,7 +90,6 @@ final class MovieQuizViewController: UIViewController {
                 self.correctAnswers = 0
                 
                 guard let firstQuestion = questionFactory.requestNextQuestion() else { return }
-                //let firstQuestion = self.questions[self.currentQuestionIndex]
                 let viewModel = self.convert(model: firstQuestion)
                 self.show(quiz: viewModel)
             }
