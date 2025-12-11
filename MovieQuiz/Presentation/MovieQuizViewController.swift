@@ -57,9 +57,9 @@ final class MovieQuizViewController: UIViewController {
             self.imageView.layer.borderWidth = 0
                 self.showNextQuestionOrResult()
             }
-        if let nextQuestion = self.questionFactory.requestNextQuestion() {
-           self.currentQuestion = nextQuestion
-        }
+       // if let nextQuestion = self.questionFactory.requestNextQuestion() {
+          // self.currentQuestion = nextQuestion
+       // }
     }
     
     private func showNextQuestionOrResult() {
@@ -73,6 +73,7 @@ final class MovieQuizViewController: UIViewController {
         } else {
             currentQuestionIndex += 1
             guard let nextQuestion = questionFactory.requestNextQuestion() else { return }
+            currentQuestion = nextQuestion
             let viewModel = convert (model: nextQuestion)
             show (quiz: viewModel)
         }
