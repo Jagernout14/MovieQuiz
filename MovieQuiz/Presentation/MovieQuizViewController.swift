@@ -15,8 +15,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private let questionAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
     private var currentQuestion: QuizQuestion?
+    private var alertPresenter = AlertPresenter()
     
-    //MARK: ViewDidLoad
+    //MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -28,11 +29,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     
     //MARK: QuestionFactoryDelegate
-    
     func didRecievedNextQuestion(question: QuizQuestion?) {
         guard let question = question else { return }
+        
         currentQuestion = question
         let viewModel = convert(model: question)
+        
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
@@ -40,9 +42,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     //MARK: Methods
     private func convert(model:QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel (image: UIImage(named: model.image) ?? UIImage (),
-                                              question: model.text,
-                                              questionNumber: "\(currentQuestionIndex + 1) / \(questionAmount)")
+        let questionStep = QuizStepViewModel(
+            image: UIImage(named: model.image) ?? UIImage (),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1) / \(questionAmount)")
         return questionStep
     }
     
@@ -72,37 +75,37 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResult() {
-        if currentQuestionIndex == questionAmount - 1 {
-            let text = "Ваш результат: \(correctAnswers)/\(questionAmount)"
-                    let viewModel = QuizResultViewModel (
-                        title: "Этот раунд окончен!",
-                        text: text,
-                        buttonText: "Сыграть ещё раз")
-                    show (quiz: viewModel)
-        } else {
-            currentQuestionIndex += 1
-            self.questionFactory.requestNextQuestion()
+            if currentQuestionIndex == questionAmount - 1 {
+                let text = "Ваш результат: \(correctAnswers)/\(questionAmount)"
+                        let viewModel = QuizResultViewModel (
+                            title: "Этот раунд окончен!",
+                            text: text,
+                            buttonText: "Сыграть ещё раз")
+                        show (quiz: viewModel)
+            } else {
+                currentQuestionIndex += 1
+                self.questionFactory.requestNextQuestion()
+            }
         }
-    }
     
     private func show (quiz result: QuizResultViewModel) {
-        let alert = UIAlertController(
-                title: result.title,
-                message: result.text,
-                preferredStyle: .alert)
-            
-            let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self]_ in
-                guard let self = self else {return}
+        let alertModel = AlertModel(
+            title: result.title,
+            message: result.text,
+            buttonText: result.buttonText,
+            completion: { [weak self] in
+                guard let self = self else { return }
                 self.currentQuestionIndex = 0
                 self.correctAnswers = 0
-                
-                questionFactory.requestNextQuestion()
+                self.questionFactory.requestNextQuestion()
             }
-            alert.addAction(action)
-            present(alert, animated: true, completion: nil)
-        }
+        )
+        
+        alertPresenter.show(in: self, model: alertModel)
+    }
+           
     
-    // Actions
+    //MARK: Actions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         answer(given: true)
     }
