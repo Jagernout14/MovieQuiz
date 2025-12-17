@@ -4,11 +4,12 @@ struct GameResult {
     let total: Int
     let date: Date
     
-    func isBetter(another: GameResult) -> Bool {
-        correct > another.correct
-        }
+    var accuracy: Double {
+        guard total > 0 else {return 0}
+        return Double(correct) / Double(total)
+    }
     
-    func saveResult(correct count: Int, total amount: Int) {
-        
+    func isBetter(another: GameResult) -> Bool {
+        return self.accuracy > another.accuracy
     }
 }

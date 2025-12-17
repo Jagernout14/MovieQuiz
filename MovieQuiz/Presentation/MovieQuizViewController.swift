@@ -16,7 +16,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
     private var currentQuestion: QuizQuestion?
     private var alertPresenter = AlertPresenter()
-    
+    private var statisticService: StatisticServiceProtocol = StatisticService()
     //MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,6 +27,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         questionFactory.requestNextQuestion()
         }
+    
     
     //MARK: QuestionFactoryDelegate
     func didRecievedNextQuestion(question: QuizQuestion?) {
@@ -89,9 +90,36 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     
     private func show (quiz result: QuizResultViewModel) {
+        let currentResult = GameResult(
+            correct: correctAnswers,
+            total: questionAmount,
+            date: Date())
+        
+        statisticService.updateStatistic(correctAnswers: correctAnswers, totalQuestions: questionAmount)
+        let isNewRecord = statisticService.saveBestGame(result: currentResult)
+        
+        let bestGame = statisticService.bestGame
+        let bestAccuracy = (bestGame.accuracy * 100)
+        let bestDateString = bestGame.date.dateTimeString
+        let recordMessage = "Лучший результат \(bestGame.correct)/\(bestGame.total) (\(bestAccuracy))"
+        
+        let accuracyPersent = statisticService.totalAccuracy * 100
+        let formatedAccuracy = String(format: "%.2f", accuracyPersent)
+        var alertMessage = "Ваш результат: \(correctAnswers)/\(questionAmount)\n"
+        alertMessage += "Количество сыгранных квизов: \(statisticService.gamesCount)\n"
+        if bestGame.total > 0 {
+            alertMessage += "Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestDateString))\n"
+        } else {
+            alertMessage += "Рекорд не установлен\n"
+        }
+        alertMessage += "Средняя точность: \(formatedAccuracy)%"
+        
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
+        
         let alertModel = AlertModel(
             title: result.title,
-            message: result.text,
+            message: alertMessage,
             buttonText: result.buttonText,
             completion: { [weak self] in
                 guard let self = self else { return }
@@ -104,7 +132,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         alertPresenter.show(in: self, model: alertModel)
     }
            
-    
     //MARK: Actions
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         answer(given: true)
@@ -121,5 +148,3 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         noButton.isEnabled = false
     }
 }
-
-

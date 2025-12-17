@@ -1,51 +1,69 @@
 import Foundation
 final class StatisticService {
     
-    private var totalCorrectAnswers: Int {
-        get {
-            UserDefaults.standard.integer(forKey: "totalCorrectAnswers")
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: "totalCorrectAnswers")
-        }
+//MARK: StatisticStorage
+    private let storage: UserDefaults = .standard
+    
+    private enum Keys: String {
+        case gamesCount
+        case bestGameCorrect
+        case bestGameTotal
+        case bestGameDate
+        case totalCorrectAnswers
+        case totalQuestionsAsked
     }
-    private var totalQuestionsAsked: Int {
+
+//MARK: Properties
+    var totalCorrectAnswers: Int {
         get {
-            UserDefaults.standard.integer(forKey: "totalQuestionsAsked")
+            storage.integer(forKey: Keys.totalCorrectAnswers.rawValue)
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "totalQuestionsAsked")
+            storage.set(newValue, forKey: Keys.totalCorrectAnswers.rawValue)
         }
     }
     
+    var totalQuestionsAsked: Int {
+        get {
+            storage.integer(forKey: Keys.totalQuestionsAsked.rawValue)
+        }
+        set {
+            storage.set(newValue, forKey: Keys.totalQuestionsAsked.rawValue)
+        }
+    }
 }
 
 extension StatisticService: StatisticServiceProtocol {
+    func updateStatistic(correctAnswers: Int, totalQuestions: Int) {
+        gamesCount += 1
+        totalCorrectAnswers += correctAnswers
+        totalQuestionsAsked += totalQuestions
+    }
     
     var gamesCount: Int {
         get {
-            let gamesCount = UserDefaults.standard.integer(forKey: "gamesCount")
+            let gamesCount = storage.integer(forKey: Keys.gamesCount.rawValue)
             return gamesCount
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "gamesCount")
+            storage.set(newValue, forKey: Keys.gamesCount.rawValue)
         }
     }
     
     var bestGame: GameResult {
         get {
-            let correct = UserDefaults.standard.integer(forKey: "bestGameCorrect")
-            let total = UserDefaults.standard.integer(forKey: "bestGameTotal")
-            if let date = UserDefaults.standard.object(forKey: "bestGameDate") as? Date {
+            let correct = storage.integer(forKey: Keys.bestGameCorrect.rawValue)
+            let total = storage.integer(forKey: Keys.bestGameTotal.rawValue)
+            if let date = storage.object(forKey: Keys.bestGameDate.rawValue) as? Date {
                 return GameResult(correct: correct, total: total, date: date)
             } else {
                 return GameResult(correct: correct, total: total, date: Date())
             }
         }
         set {
-            UserDefaults.standard.set(newValue.correct, forKey: "bestGameCorrect")
-            UserDefaults.standard.set(newValue.total, forKey: "bestGameTotal")
-            UserDefaults.standard.set(newValue.date, forKey: "bestGameDate")
+            storage.set(newValue.correct, forKey: Keys.bestGameCorrect.rawValue)
+            storage.set(newValue.total, forKey: Keys.bestGameTotal.rawValue)
+            storage.set(newValue.date, forKey: Keys.bestGameDate.rawValue)
         }
     }
     
@@ -53,7 +71,16 @@ extension StatisticService: StatisticServiceProtocol {
         if totalQuestionsAsked == 0 {
             return 0.0
         } else {
-            return Double(totalQuestionsAsked) / Double(totalCorrectAnswers)
+            return Double(totalCorrectAnswers) / Double(totalQuestionsAsked)
         }
+    } 
+    
+    func saveBestGame(result: GameResult) -> Bool {
+        let currentGame = bestGame
+        if result.isBetter(another: currentGame) {
+            bestGame = result
+            return true
+        }
+        return false
     }
 }
