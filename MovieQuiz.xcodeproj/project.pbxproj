@@ -78,6 +78,15 @@
 			path = Fonts;
 			sourceTree = "<group>";
 		};
+		611342392B701CF6003FC2A4 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2836E9EE2ED62806004256CF /* YS Display-Medium.ttf */,
+				2836E9ED2ED62806004256CF /* YS Display-Bold.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		28B3DD4F2EEAB83F00E66D78 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -407,6 +416,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RD76822K79;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MovieQuiz/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -436,6 +446,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RD76822K79;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MovieQuiz/Resources/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
