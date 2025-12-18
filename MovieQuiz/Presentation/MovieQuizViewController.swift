@@ -24,7 +24,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let questionFactory = QuestionFactory()
         questionFactory.setup(delegate: self)
         self.questionFactory = questionFactory
-        
+
         questionFactory.requestNextQuestion()
         }
     
@@ -148,3 +148,4 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         noButton.isEnabled = false
     }
 }
+   
