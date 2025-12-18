@@ -147,4 +147,58 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         yesButton.isEnabled = false
         noButton.isEnabled = false
     }
+    
+    private func showNextQuestionOrResult() {
+        if currentQuestionIndex == questions.count - 1 {
+            let text = "Ваш результат: \(correctAnswers)/10"
+                    let viewModel = QuizResultViewModel (
+                        title: "Этот раунд окончен!",
+                        text: text,
+                        buttonText: "Сыграть ещё раз")
+                    show (quiz: viewModel)
+           
+        } else {
+            currentQuestionIndex += 1
+            let nextQuestion = questions[currentQuestionIndex]
+            let viewModel = convert (model: nextQuestion)
+            show (quiz: viewModel)
+        }
+    }
+    
+    private func show (quiz result: QuizResultViewModel) {
+        let alert = UIAlertController(
+                title: result.title,
+                message: result.text,
+                preferredStyle: .alert)
+            
+            let action = UIAlertAction(title: result.buttonText, style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                self.currentQuestionIndex = 0
+                self.correctAnswers = 0
+                
+                let firstQuestion = self.questions[self.currentQuestionIndex]
+                let viewModel = self.convert(model: firstQuestion)
+                self.show(quiz: viewModel)
+            }
+            
+            alert.addAction(action)
+            
+            present(alert, animated: true, completion: nil)
+        }
+    
+    // Actions
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        answer(given: true)
+    }
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        answer(given: false)
+    }
+   
+    private func answer (given: Bool) {
+        let correct = questions[currentQuestionIndex].correctAnswer
+        showAnswerResult(isCorrect: given == correct)
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+    }
+    // Та подсказка, которую мне дали (с принудительной распаковкой опционала) - не стал ее использовать, по двум причинам. Первая - в учебнике было указано, что форс анврап желательно нигде не использовать. Вторая - код не работал. Рещил вынести логику кнопки в отдельную функцию и переиспользовать ее.
 }
