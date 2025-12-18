@@ -1,3 +1,3 @@
 protocol QuestionFactoryDelegate: AnyObject {
-    func didRecievedNextQuestion(question: QuizQuestion?)
+    func didReceivedNextQuestion(question: QuizQuestion?)
 }
