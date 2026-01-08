@@ -21,6 +21,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var alertPresenter = AlertPresenter()
     private var statisticService: StatisticServiceProtocol = StatisticService()
     private var moviesLoader: MoviesLoading = MoviesLoader()
+    private var noInternetConnection = false
     
     //MARK: Lifecycle
     override func viewDidLoad() {
@@ -76,13 +77,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNextQuestionOrResult() {
-            if currentQuestionIndex == questionAmount - 1 {
-                showQuizResult()
+        if currentQuestionIndex == questionAmount - 1 {
+            showQuizResult()
+        } else {
+            currentQuestionIndex += 1
+            if noInternetConnection {
+                showNetworkError(message: "Интернет соединение отсутствует")
             } else {
-                currentQuestionIndex += 1
                 self.questionFactory.requestNextQuestion()
             }
         }
+    }
     
     private func showQuizResult() {
         let result = GameResult(
@@ -133,6 +138,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showNetworkError(message: String) {
+        noInternetConnection = true
         hideLoadingIndicator()
         
         let model = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self] in
@@ -141,18 +147,23 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
             
-            self.questionFactory.requestNextQuestion()
+            self.noInternetConnection = false
+            self.showLoadingIndicator()
+            self.questionFactory.loadData()
         }
         
         alertPresenter.show(in: self, model: model)
     }
     
     func didLoadDataFromServer() {
+        noInternetConnection = false
         activityIndicator.isHidden = true
         questionFactory.requestNextQuestion()
     }
     
     func didFailToLoadData(with error: Error) {
+        noInternetConnection = true
+        hideLoadingIndicator()
         yesButton.isEnabled = false
         noButton.isEnabled = false
         showNetworkError(message: "Ошибка сети")
