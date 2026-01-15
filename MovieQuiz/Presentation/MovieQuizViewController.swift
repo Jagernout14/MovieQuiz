@@ -45,7 +45,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     //MARK: UI Updates
     private func convert(model:QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage (),
+            image: UIImage(data: model.imageData) ?? UIImage (),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1) / \(questionAmount)")
         return questionStep
@@ -90,7 +90,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showQuizResult() {
-        let result = GameResult(
+        _ = GameResult(
             correct: correctAnswers,
             total: questionAmount,
             date: Date()
