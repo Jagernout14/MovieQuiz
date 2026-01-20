@@ -2,25 +2,17 @@ import XCTest
 @testable import MovieQuiz
 
 final class MovieQuizViewControllerMock: MovieQuizViewControllerProtocol {
-    // MARK: - Свойства для отслеживания вызовов
     
     var showStepCalled = false
     var lastStepModel: QuizStepViewModel?
-    
     var showQuizResultCalled = false
-    
     var highlightBorderCalled = false
     var highlightedIsCorrectAnswer: Bool?
-    
     var showLoadingIndicatorCalled = false
     var hideLoadingIndicatorCalled = false
-    
     var showNetworkErrorCalled = false
     var lastNetworkErrorMessage: String?
     var resetBorderCalled = false
-    
-    
-    // MARK: - Реализация протокола
     
     func show(quiz step: QuizStepViewModel) {
         showStepCalled = true
