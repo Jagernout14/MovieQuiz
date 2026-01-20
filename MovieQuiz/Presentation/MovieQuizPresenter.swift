@@ -10,15 +10,18 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     var noInternetConnection = false
     var questionFactory: QuestionFactoryProtocol?
     var correctAnswers = 0
+    private let statisticService: StatisticServiceProtocol!
     
     init(viewController: MovieQuizViewController) {
-            self.viewController = viewController
-            
-            questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
-            questionFactory?.loadData()
-            viewController.showLoadingIndicator()
-        }
-
+        self.viewController = viewController
+        
+        statisticService = StatisticService()
+        
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        questionFactory?.loadData()
+        viewController.showLoadingIndicator()
+    }
+    
     func convert(model:QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             image: UIImage(data: model.imageData) ?? UIImage (),
@@ -46,20 +49,20 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func yesButtonClicked() {
         didAnswer(isYes: true)
     }
-        
-        func noButtonClicked() {
-           didAnswer(isYes: false)
-        }
+    
+    func noButtonClicked() {
+        didAnswer(isYes: false)
+    }
     
     func didLoadDataFromServer() {
-            viewController?.hideLoadingIndicator()
-            questionFactory?.requestNextQuestion()
-        }
+        viewController?.hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
     
     func didFailToLoadData(with error: Error) {
-            let message = error.localizedDescription
-            viewController?.showNetworkError(message: message)
-        }
+        let message = error.localizedDescription
+        viewController?.showNetworkError(message: message)
+    }
     
     private func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else { return }
@@ -77,17 +80,17 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     
     func showNextQuestionOrResult() {
-       if self.isLastQuestion() {
-           viewController?.showQuizResult()
-      } else {
-          if noInternetConnection {
-              viewController?.showNetworkError(message: "Интернет соединение отсутствует")
-          } else {
-              self.switchToNextQuestion()
-              questionFactory?.requestNextQuestion()
-          }
-      }
-  }
+        if self.isLastQuestion() {
+            viewController?.showQuizResult()
+        } else {
+            if noInternetConnection {
+                viewController?.showNetworkError(message: "Интернет соединение отсутствует")
+            } else {
+                self.switchToNextQuestion()
+                questionFactory?.requestNextQuestion()
+            }
+        }
+    }
     
     func didReceivedNextQuestion(question: QuizQuestion?) {
         guard let question = question else { return }
@@ -98,5 +101,24 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             self?.viewController?.show(quiz: viewModel)
         }
     }
-     }
+    
+    func makeResultMessage() -> String {
+        statisticService.updateStatistic(correctAnswers: correctAnswers, totalQuestions: questionAmount)
+        
+        let bestGame = statisticService.bestGame
+        
+        let totalPlaysCountLine = "Сыграно квизов: \(statisticService.gamesCount)"
+        let currentGameResultLine = "Ваш результат: \(correctAnswers) / \(questionAmount)"
+        let bestGameInfoLine = "Рекорд: \(bestGame.correct) / \(bestGame.total)"
+        + " (\(bestGame.date.dateTimeString))"
+        let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        
+        let resultMessage = [
+            currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine
+        ].joined(separator: "\n")
+        
+        return resultMessage
+    }
+    
+}
 

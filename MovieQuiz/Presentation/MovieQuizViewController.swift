@@ -54,7 +54,7 @@ final class MovieQuizViewController: UIViewController {
             date: Date()
         )
         
-        statisticService.updateStatistic(correctAnswers: presenter.correctAnswers, totalQuestions: presenter.questionAmount)
+        /* statisticService.updateStatistic(correctAnswers: presenter.correctAnswers, totalQuestions: presenter.questionAmount)
         
         let bestGame = statisticService.bestGame
         let accuracy = statisticService.totalAccuracy * 100
@@ -67,6 +67,9 @@ final class MovieQuizViewController: UIViewController {
             message += "Рекорд: \(bestGame.correct)/\(bestGame.total)\n"
         }
         message += "Средняя точность: \(formattedAccuracy)%"
+         */
+        
+        let message = presenter.makeResultMessage()
         
         let alertModel = AlertModel(
             identifier: "GameResult",
