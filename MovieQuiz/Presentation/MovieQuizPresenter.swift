@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     
     let questionAmount: Int = 10
@@ -10,6 +10,14 @@ final class MovieQuizPresenter {
     var noInternetConnection = false
     var questionFactory: QuestionFactoryProtocol?
     var correctAnswers = 0
+    
+    init(viewController: MovieQuizViewController) {
+            self.viewController = viewController
+            
+            questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+            questionFactory?.loadData()
+            viewController.showLoadingIndicator()
+        }
 
     func convert(model:QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
@@ -26,6 +34,9 @@ final class MovieQuizPresenter {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswers = 0
+        
+        questionFactory?.loadData()
+        viewController?.showLoadingIndicator()
     }
     
     func switchToNextQuestion() {
@@ -38,6 +49,16 @@ final class MovieQuizPresenter {
         
         func noButtonClicked() {
            didAnswer(isYes: false)
+        }
+    
+    func didLoadDataFromServer() {
+            viewController?.hideLoadingIndicator()
+            questionFactory?.requestNextQuestion()
+        }
+    
+    func didFailToLoadData(with error: Error) {
+            let message = error.localizedDescription
+            viewController?.showNetworkError(message: message)
         }
     
     private func didAnswer(isYes: Bool) {
@@ -77,15 +98,5 @@ final class MovieQuizPresenter {
             self?.viewController?.show(quiz: viewModel)
         }
     }
-    
-    
-        
-    
-    //private func answer (given: Bool) {
-        // guard let currentQuestion = currentQuestion else { return }
-       //  let correct = currentQuestion.correctAnswer
-      //  viewController?.showAnswerResult(isCorrect: given == correct)
-         //yesButton.isEnabled = false
-         //noButton.isEnabled = false
      }
 
