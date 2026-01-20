@@ -1,18 +1,19 @@
-import UIKit
+import Foundation
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
+    private weak var viewController: MovieQuizViewControllerProtocol?
+    private var questionFactory: QuestionFactoryProtocol?
+    private let statisticService: StatisticServiceProtocol!
     
     let questionAmount: Int = 10
     private var currentQuestionIndex = 0
-    var currentQuestion: QuizQuestion?
-    weak var viewController: MovieQuizViewController?
-    var noInternetConnection = false
-    var questionFactory: QuestionFactoryProtocol?
+    private var currentQuestion: QuizQuestion?
     var correctAnswers = 0
-    private let statisticService: StatisticServiceProtocol!
     
-    init(viewController: MovieQuizViewController) {
+    var noInternetConnection = false
+    
+    init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         
         statisticService = StatisticService()
@@ -24,7 +25,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     func convert(model:QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
-            image: UIImage(data: model.imageData) ?? UIImage (),
+            imageData: model.imageData,
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1) / \(questionAmount)")
         return questionStep
@@ -67,19 +68,27 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else { return }
         
-        let givenAnswer = isYes
-        let isCorrect = givenAnswer == currentQuestion.correctAnswer
+        let isCorrect = isYes == currentQuestion.correctAnswer
         
         if isCorrect {
             correctAnswers += 1
         }
         
-        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+        proceedWithAnswer(isCorrect: isCorrect)
     }
     
+    private func proceedWithAnswer(isCorrect: Bool) {
+        
+        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
+         
+         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+             guard let self = self else { return }
+             self.viewController?.resetImageBorder()
+             self.proceedToNextQuestionOrResults()
+         }
+     }
     
-    
-    func showNextQuestionOrResult() {
+   private func proceedToNextQuestionOrResults() {
         if self.isLastQuestion() {
             viewController?.showQuizResult()
         } else {
@@ -102,6 +111,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
+    
+    
     func makeResultMessage() -> String {
         statisticService.updateStatistic(correctAnswers: correctAnswers, totalQuestions: questionAmount)
         
@@ -119,6 +130,5 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         return resultMessage
     }
-    
 }
 
