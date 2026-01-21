@@ -6,10 +6,7 @@ protocol MoviesLoading {
 
 struct MoviesLoader: MoviesLoading {
     private let networkClient: NetworkRouting
-    
-    init(networkClient: NetworkRouting = NetworkClient()) {
-        self.networkClient = networkClient
-    }
+    private let jsonDecoder = JSONDecoder()
     
     private var mostPopularMoviesUrl: URL? {
         guard let url = URL(string: "https://tv-api.com/en/API/Top250Movies/k_zcuw1ytf") else {
@@ -18,7 +15,10 @@ struct MoviesLoader: MoviesLoading {
         }
         return url
     }
-    private let jsonDecoder = JSONDecoder()
+    
+    init(networkClient: NetworkRouting = NetworkClient()) {
+        self.networkClient = networkClient
+    }
     
     func loadMovies(handler: @escaping (Result<MostPopularMovies, any Error>) -> Void) {
         guard let url = mostPopularMoviesUrl else {
