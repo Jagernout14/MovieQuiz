@@ -4,7 +4,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     private weak var viewController: MovieQuizViewControllerProtocol?
     private var questionFactory: QuestionFactoryProtocol?
-    private let statisticService: StatisticServiceProtocol!
+    private let statisticService: StatisticServiceProtocol = StatisticService()
     
     let questionAmount: Int = 10
     private var currentQuestionIndex = 0
@@ -15,8 +15,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
-        
-        statisticService = StatisticService()
         
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
@@ -116,13 +114,20 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     func makeResultMessage() -> String {
         statisticService.updateStatistic(correctAnswers: correctAnswers, totalQuestions: questionAmount)
         
+        let currentResult = GameResult(
+            correct: correctAnswers,
+            total: questionAmount,
+            date: Date())
+        
+        statisticService.saveBestGame(result: currentResult)
+        
         let bestGame = statisticService.bestGame
         
         let totalPlaysCountLine = "Сыграно квизов: \(statisticService.gamesCount)"
         let currentGameResultLine = "Ваш результат: \(correctAnswers) / \(questionAmount)"
         let bestGameInfoLine = "Рекорд: \(bestGame.correct) / \(bestGame.total)"
         + " (\(bestGame.date.dateTimeString))"
-        let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
+        let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy * 100))%"
         
         let resultMessage = [
             currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine
