@@ -25,7 +25,7 @@ struct NetworkClient: NetworkRouting {
                 return
             }
             
-            guard let data = data else { return }
+            guard let data else { return }
             handler(.success(data))
         }
         

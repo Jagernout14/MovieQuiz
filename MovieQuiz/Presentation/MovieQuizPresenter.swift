@@ -2,17 +2,19 @@ import Foundation
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
-    private weak var viewController: MovieQuizViewControllerProtocol?
-    private var questionFactory: QuestionFactoryProtocol?
-    private let statisticService: StatisticServiceProtocol = StatisticService()
-    
+    // MARK: - Public Properties
     let questionAmount: Int = 10
-    private var currentQuestionIndex = 0
-    private var currentQuestion: QuizQuestion?
     var correctAnswers = 0
-    
     var noInternetConnection = false
     
+    // MARK: - Private Properties
+    private let statisticService: StatisticServiceProtocol = StatisticService()
+    private var questionFactory: QuestionFactoryProtocol?
+    private var currentQuestionIndex = 0
+    private var currentQuestion: QuizQuestion?
+    private weak var viewController: MovieQuizViewControllerProtocol?
+    
+    // MARK: - Initializers
     init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         
@@ -21,6 +23,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController.showLoadingIndicator()
     }
     
+    // MARK: - Public Methods
     func convert(model:QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(
             imageData: model.imageData,
@@ -29,78 +32,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         return questionStep
     }
     
-    func isLastQuestion() -> Bool {
-        currentQuestionIndex == questionAmount - 1
-    }
-    
-    func restartGame() {
-        currentQuestionIndex = 0
-        correctAnswers = 0
-        
-        questionFactory?.loadData()
-        viewController?.showLoadingIndicator()
-    }
-    
-    func switchToNextQuestion() {
-        currentQuestionIndex += 1
-    }
-    
-    func yesButtonClicked() {
-        didAnswer(isYes: true)
-    }
-    
-    func noButtonClicked() {
-        didAnswer(isYes: false)
-    }
-    
-    func didLoadDataFromServer() {
-        viewController?.hideLoadingIndicator()
-        questionFactory?.requestNextQuestion()
-    }
-    
-    func didFailToLoadData(with error: Error) {
-        let message = error.localizedDescription
-        viewController?.showNetworkError(message: message)
-    }
-    
-    private func didAnswer(isYes: Bool) {
-        guard let currentQuestion = currentQuestion else { return }
-        
-        let isCorrect = isYes == currentQuestion.correctAnswer
-        
-        if isCorrect {
-            correctAnswers += 1
-        }
-        
-        proceedWithAnswer(isCorrect: isCorrect)
-    }
-    
-    private func proceedWithAnswer(isCorrect: Bool) {
-        
-        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
-         
-         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-             guard let self = self else { return }
-             self.viewController?.resetImageBorder()
-             self.proceedToNextQuestionOrResults()
-         }
-     }
-    
-   private func proceedToNextQuestionOrResults() {
-        if self.isLastQuestion() {
-            viewController?.showQuizResult()
-        } else {
-            if noInternetConnection {
-                viewController?.showNetworkError(message: "Интернет соединение отсутствует")
-            } else {
-                self.switchToNextQuestion()
-                questionFactory?.requestNextQuestion()
-            }
-        }
-    }
-    
     func didReceivedNextQuestion(question: QuizQuestion?) {
-        guard let question = question else { return }
+        guard let question else { return }
         
         currentQuestion = question
         let viewModel = convert(model: question)
@@ -108,8 +41,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
             self?.viewController?.show(quiz: viewModel)
         }
     }
-    
-    
     
     func makeResultMessage() -> String {
         statisticService.updateStatistic(correctAnswers: correctAnswers, totalQuestions: questionAmount)
@@ -135,5 +66,75 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         return resultMessage
     }
+    
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        let message = error.localizedDescription
+        viewController?.showNetworkError(message: message)
+    }
+    
+    func switchToNextQuestion() {
+        currentQuestionIndex += 1
+    }
+    
+    func isLastQuestion() -> Bool {
+        currentQuestionIndex == questionAmount - 1
+    }
+    
+    func restartGame() {
+        currentQuestionIndex = 0
+        correctAnswers = 0
+        
+        questionFactory?.loadData()
+        viewController?.showLoadingIndicator()
+    }
+    
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
+    
+    func noButtonClicked() {
+        didAnswer(isYes: false)
+    }
+    
+    // MARK: - Private Methods
+    private func didAnswer(isYes: Bool) {
+        guard let currentQuestion else { return }
+        
+        let isCorrect = isYes == currentQuestion.correctAnswer
+        
+        if isCorrect {
+            correctAnswers += 1
+        }
+        
+        proceedWithAnswer(isCorrect: isCorrect)
+    }
+    
+    private func proceedWithAnswer(isCorrect: Bool) {
+        
+        viewController?.highlightImageBorder(isCorrectAnswer: isCorrect)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self else { return }
+            self.viewController?.resetImageBorder()
+            self.proceedToNextQuestionOrResults()
+        }
+    }
+    
+    private func proceedToNextQuestionOrResults() {
+        if isLastQuestion() {
+            viewController?.showQuizResult()
+        } else {
+            if noInternetConnection {
+                viewController?.showNetworkError(message: "Интернет соединение отсутствует")
+            } else {
+                switchToNextQuestion()
+                questionFactory?.requestNextQuestion()
+            }
+        }
+    }
 }
-

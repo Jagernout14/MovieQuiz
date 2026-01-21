@@ -2,8 +2,7 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
     
-    
-    //MARK: Outlets
+    // MARK: - IB Outlets
     @IBOutlet private weak var imageView: UIImageView!
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var counterLabel: UILabel!
@@ -11,19 +10,32 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     @IBOutlet private weak var yesButton: UIButton!
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     
-    //MARK: Properties
+    // MARK: - Private Properties
     private var presenter: MovieQuizPresenter!
     private var alertPresenter = AlertPresenter()
     private var statisticService: StatisticServiceProtocol = StatisticService()
     private var moviesLoader: MoviesLoading = MoviesLoader()
     
-    //MARK: Lifecycle
+    // MARK: - Overrides Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter = MovieQuizPresenter(viewController: self)
-        //presenter.restartGame()
     }
     
+    // MARK: - IB Actions
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
+        presenter.yesButtonClicked()
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+    }
+    
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
+        presenter.noButtonClicked()
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+    }
+    
+    // MARK: - Public Methods
     func show(quiz step: QuizStepViewModel) {
         imageView.image = UIImage(data: step.imageData) ?? UIImage()
         textLabel.text = step.question
@@ -31,17 +43,6 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         
         yesButton.isEnabled = true
         noButton.isEnabled = true
-    }
-    
-    func highlightImageBorder(isCorrectAnswer: Bool) {
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 8
-        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        imageView.layer.cornerRadius = 20
-    }
-    
-    func resetImageBorder() {
-        imageView.layer.borderWidth = 0
     }
     
     func showQuizResult() {
@@ -66,8 +67,36 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         alertPresenter.show(in: self, model: alertModel)
     }
     
-    private func restartGame() {
-        presenter.restartGame()
+    func showNetworkError(message: String) {
+        presenter.noInternetConnection = true
+        hideLoadingIndicator()
+        
+        let model = AlertModel(
+            identifier: "GameResultError",
+            title: "Ошибка",
+            message: message,
+            buttonText: "Попробовать еще раз") { [weak self] in
+                guard let self else { return }
+                
+                self.presenter.restartGame()
+                
+                presenter.noInternetConnection = false
+                self.showLoadingIndicator()
+                
+            }
+        
+        alertPresenter.show(in: self, model: model)
+    }
+    
+    func highlightImageBorder(isCorrectAnswer: Bool) {
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
+        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+        imageView.layer.cornerRadius = 20
+    }
+    
+    func resetImageBorder() {
+        imageView.layer.borderWidth = 0
     }
     
     func showLoadingIndicator() {
@@ -80,35 +109,8 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
         activityIndicator.stopAnimating()
     }
     
-    func showNetworkError(message: String) {
-        presenter.noInternetConnection = true
-        hideLoadingIndicator()
-        
-        let model = AlertModel(identifier: "GameResultError", title: "Ошибка", message: message, buttonText: "Попробовать еще раз") { [weak self] in
-            guard let self = self else { return }
-            
-            self.presenter.restartGame()
-            
-            presenter.noInternetConnection = false
-            self.showLoadingIndicator()
-            
-        }
-        
-        alertPresenter.show(in: self, model: model)
-    }
-    
-    //MARK: Actions
-    @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        presenter.yesButtonClicked()
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
-    }
-    
-    @IBAction private func noButtonClicked(_ sender: UIButton) {
-        presenter.noButtonClicked()
-        yesButton.isEnabled = false
-        noButton.isEnabled = false
+    // MARK: - Private Methods
+    private func restartGame() {
+        presenter.restartGame()
     }
 }
-
-   

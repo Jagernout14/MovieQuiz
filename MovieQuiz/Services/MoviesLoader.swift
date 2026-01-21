@@ -11,19 +11,27 @@ struct MoviesLoader: MoviesLoading {
         self.networkClient = networkClient
     }
     
-    private var mostPopularMoviesUrl: URL {
+    private var mostPopularMoviesUrl: URL? {
         guard let url = URL(string: "https://tv-api.com/en/API/Top250Movies/k_zcuw1ytf") else {
-            preconditionFailure("Unable to construct mostPopularMoviesUrl")
+            print("Unable to construct mostPopularMoviesUrl")
+            return nil
         }
         return url
     }
+    private let jsonDecoder = JSONDecoder()
     
     func loadMovies(handler: @escaping (Result<MostPopularMovies, any Error>) -> Void) {
-        networkClient.fetch(url: mostPopularMoviesUrl) { result in
+        guard let url = mostPopularMoviesUrl else {
+            let error = NSError(domain: "NetworkError", code: 1001, userInfo: [NSLocalizedDescriptionKey: "Не удалось сформировать URL для загрузки данных"]
+            )
+            handler(.failure(error))
+            return
+        }
+        networkClient.fetch(url: url) { result in
             switch result {
             case .success(let data):
                 do {
-                    let mostPopularMovies = try JSONDecoder().decode(MostPopularMovies.self, from: data)
+                    let mostPopularMovies = try jsonDecoder.decode(MostPopularMovies.self, from: data)
                     handler(.success(mostPopularMovies))
                 } catch {
                     handler(.failure(error))
