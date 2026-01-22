@@ -1,19 +1,7 @@
 import Foundation
 final class StatisticService {
     
-//MARK: StatisticStorage
-    private let storage: UserDefaults = .standard
-    
-    private enum Keys: String {
-        case gamesCount
-        case bestGameCorrect
-        case bestGameTotal
-        case bestGameDate
-        case totalCorrectAnswers
-        case totalQuestionsAsked
-    }
-
-//MARK: Properties
+    // MARK: - Public Properties
     var totalCorrectAnswers: Int {
         get {
             storage.integer(forKey: Keys.totalCorrectAnswers.rawValue)
@@ -32,8 +20,21 @@ final class StatisticService {
         }
     }
 }
+    
+    // MARK: - Private Properties
+private let storage: UserDefaults = .standard
 
-extension StatisticService: StatisticServiceProtocol {
+private enum Keys: String {
+    case gamesCount
+    case bestGameCorrect
+    case bestGameTotal
+    case bestGameDate
+    case totalCorrectAnswers
+    case totalQuestionsAsked
+}
+
+    // MARK: - Extension
+    extension StatisticService: StatisticServiceProtocol {
     func updateStatistic(correctAnswers: Int, totalQuestions: Int) {
         gamesCount += 1
         totalCorrectAnswers += correctAnswers

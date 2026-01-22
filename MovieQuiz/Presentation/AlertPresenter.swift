@@ -1,6 +1,7 @@
 import UIKit
+
 final class AlertPresenter {
-    
+    // MARK: - Public Methods
     func show(in viewController: UIViewController, model: AlertModel) {
         let alert = UIAlertController(
             title: model.title,
@@ -15,6 +16,7 @@ final class AlertPresenter {
             model.completion()
         }
         alert.addAction(action)
+        alert.view.accessibilityIdentifier = model.identifier
         viewController.present(alert, animated: true)
     }
 }
